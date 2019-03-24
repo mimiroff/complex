@@ -1,0 +1,20 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker -t ibarashkov/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run ibarashkov/react-test npm test -- --coverage
+
+after_success:
+  - docker build -t ibarashkov/multi-client ./client
+  - docker build -t ibarashkov/multi-nginx ./nginx
+  - docker build -t ibarashkov/multi-server ./server
+  - docker build -t ibarashkov/multi-worker ./worker
+  - echo "DOCKER_PASSWORD" | docker login -u "DOCKER_ID" --password-stdin
+  - docker push ibarashkov/multi-client
+  - docker push ibarashkov/multi-nginx
+  - docker push ibarashkov/multi-server
+  - docker push ibarashkov/multi-worker
